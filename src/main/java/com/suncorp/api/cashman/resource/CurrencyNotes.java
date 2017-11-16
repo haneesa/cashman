@@ -10,6 +10,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import com.suncorp.api.cashman.entity.CurrencyNote;
 import com.suncorp.api.cashman.exception.CurrencyNotAvailableException;
+import com.suncorp.api.cashman.jsonapi.model.JsonApiError;
 import com.suncorp.api.cashman.jsonapi.model.JsonApiResponse;
 import com.suncorp.api.cashman.service.CurrencyDispenserService;
 
@@ -45,10 +47,12 @@ public class CurrencyNotes {
 				List<CurrencyNote> notes = dispenserService.dispenseCurrency(Integer.valueOf(amount));
 				return Response.ok(new JsonApiResponse(notes).jsonResponse()).build();
 			} else {
-				return Response.status(400).build();
+				return Response.status(Status.BAD_REQUEST)
+						.entity(new JsonApiError("400", "error.client.amount.invalid")).build();
 			}
 		} catch (CurrencyNotAvailableException exception) {
-			return Response.status(500).build();
+			return Response.status(Status.BAD_REQUEST)
+					.entity(new JsonApiError("400", "error.client.notes.not-available")).build();
 		}
 	}
 

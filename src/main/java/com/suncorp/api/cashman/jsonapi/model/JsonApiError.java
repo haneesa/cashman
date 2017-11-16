@@ -12,12 +12,9 @@ public class JsonApiError {
 	private String code;
 	private String title;
 	private String detail;
-	private Source source;
-	private Object meta;
 
-	@Data
-	public static class Source {
-		private String pointer;
-		private String parameter;
+	public JsonApiError(String status, String code) {
+		this.status = status;
+		this.code = code;
 	}
 }
