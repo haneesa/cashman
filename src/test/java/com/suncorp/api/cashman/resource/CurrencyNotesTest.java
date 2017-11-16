@@ -64,4 +64,13 @@ public class CurrencyNotesTest {
 	public void shouldReturnSuccessForValidNumberOfNotesForFifty() {
 		assertEquals(HttpStatus.NO_CONTENT.value(), currencyNotes.loadFiftyCurrencyNotes("10").getStatus());
 	}
+
+	@Test
+	public void shouldReturnSuccessForFetchThreshold() {
+		List<CurrencyNote> notes = new ArrayList<>();
+		notes.add(new CurrencyNote("20-2", 20, 2));
+		notes.add(new CurrencyNote("50-3", 50, 3));
+		when(mockDispenserService.fetchThreshold()).thenReturn(notes);
+		assertEquals(HttpStatus.OK.value(), currencyNotes.fetchThreshold().getStatus());
+	}
 }

@@ -45,4 +45,15 @@ public class CurrencyDispenserServiceTest {
 		dispenserService.postConstruct();
 		dispenserService.dispenseCurrency(30);
 	}
+
+	@Test
+	public void shouldReturnThreshold() {
+		dispenserService.postConstruct();
+		List<CurrencyNote> notes = dispenserService.fetchThreshold();
+		assertEquals(10, notes.get(0).getNumberOfNotes());
+		assertEquals(50, notes.get(0).getCurrencyValue());
+		assertEquals(10, notes.get(1).getNumberOfNotes());
+		assertEquals(20, notes.get(1).getCurrencyValue());
+
+	}
 }

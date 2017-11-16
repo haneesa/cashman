@@ -36,6 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 @Produces("application/vnd.api+json")
 public class CurrencyNotes {
 
+	private static final String FIFTIES = "fifties";
+	private static final String TWENTIES = "twenties";
 	@Autowired
 	private CurrencyDispenserService dispenserService;
 
@@ -59,7 +61,7 @@ public class CurrencyNotes {
 	public Response loadTwentyCurrencyNotes(@PathParam("numberOfNotes") String numberOfNotes) {
 		log.info("Request for load Twenty denomination: {}", numberOfNotes);
 		if (StringUtils.isNumeric(numberOfNotes)) {
-			dispenserService.loadCurrency("twenties", Integer.valueOf(numberOfNotes));
+			dispenserService.loadCurrency(TWENTIES, Integer.valueOf(numberOfNotes));
 			return Response.noContent().build();
 		} else {
 			return badRequest("error.client.number-of-notes.invalid");
@@ -71,11 +73,18 @@ public class CurrencyNotes {
 	public Response loadFiftyCurrencyNotes(@PathParam("numberOfNotes") String numberOfNotes) {
 		log.info("Request for load Twenty denomination: {}", numberOfNotes);
 		if (StringUtils.isNumeric(numberOfNotes)) {
-			dispenserService.loadCurrency("fifties", Integer.valueOf(numberOfNotes));
+			dispenserService.loadCurrency(FIFTIES, Integer.valueOf(numberOfNotes));
 			return Response.noContent().build();
 		} else {
 			return badRequest("error.client.number-of-notes.invalid");
 		}
+	}
+
+	@GET
+	@Path("threshold")
+	public Response fetchThreshold() {
+		List<CurrencyNote> notes = dispenserService.fetchThreshold();
+		return Response.ok(new JsonApiResponse(notes).jsonResponse()).build();
 	}
 
 	private Response badRequest(String message) {

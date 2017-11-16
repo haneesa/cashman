@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CurrencyDispenserService {
 
+	private static final int CONSTANT_20 = 20;
+	private static final int CONSTANT_50 = 50;
 	private int twenties;
 	private int fifties;
 
@@ -38,22 +40,13 @@ public class CurrencyDispenserService {
 			throw new CurrencyNotAvailableException("Amount not available");
 		}
 		List<CurrencyNote> notes = new ArrayList<>();
-
-		if (isAmountMultipleOf(50, amount) && NotesAvailableFor(fifties, amount / 50)) {
-			int numberOfNotes = amount / 50;
-			CurrencyNote note = new CurrencyNote();
-			note.setCurrencyValue(50);
-			note.setNumberOfNotes(numberOfNotes);
-			note.setId();
-			notes.add(note);
+		if (isAmountMultipleOf(CONSTANT_50, amount) && NotesAvailableFor(fifties, amount / CONSTANT_50)) {
+			int numberOfNotes = amount / CONSTANT_50;
+			notes.add(note(CONSTANT_50, numberOfNotes));
 			fifties = fifties - numberOfNotes;
-		} else if (isAmountMultipleOf(20, amount) && NotesAvailableFor(twenties, amount / 20)) {
-			int numberOfNotes = amount / 20;
-			CurrencyNote note = new CurrencyNote();
-			note.setCurrencyValue(20);
-			note.setNumberOfNotes(numberOfNotes);
-			note.setId();
-			notes.add(note);
+		} else if (isAmountMultipleOf(CONSTANT_20, amount) && NotesAvailableFor(twenties, amount / CONSTANT_20)) {
+			int numberOfNotes = amount / CONSTANT_20;
+			notes.add(note(CONSTANT_20, numberOfNotes));
 			twenties = twenties - numberOfNotes;
 		} else {
 			throw new CurrencyNotAvailableException("Amount not available");
@@ -70,7 +63,7 @@ public class CurrencyDispenserService {
 	}
 
 	private boolean amountNotAvailable(int amount) {
-		return amount > twenties * 20 + fifties * 50;
+		return amount > twenties * CONSTANT_20 + fifties * CONSTANT_50;
 	}
 
 	public void loadCurrency(String currencyType, int numberOfNotes) {
@@ -79,6 +72,21 @@ public class CurrencyDispenserService {
 		} else if ("fifties".equalsIgnoreCase(currencyType)) {
 			fifties = fifties + numberOfNotes;
 		}
+	}
+
+	public List<CurrencyNote> fetchThreshold() {
+		List<CurrencyNote> notes = new ArrayList<>();
+		notes.add(note(CONSTANT_50, fifties));
+		notes.add(note(CONSTANT_20, twenties));
+		return notes;
+	}
+
+	private CurrencyNote note(int denomination, int numberOfNotes) {
+		CurrencyNote note = new CurrencyNote();
+		note.setCurrencyValue(denomination);
+		note.setNumberOfNotes(numberOfNotes);
+		note.setId();
+		return note;
 	}
 
 }
