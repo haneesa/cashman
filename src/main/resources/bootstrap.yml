@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: cashman
+
+server:
+  servlet-path: /management
