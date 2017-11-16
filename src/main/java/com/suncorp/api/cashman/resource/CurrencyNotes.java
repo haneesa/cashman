@@ -47,12 +47,10 @@ public class CurrencyNotes {
 				List<CurrencyNote> notes = dispenserService.dispenseCurrency(Integer.valueOf(amount));
 				return Response.ok(new JsonApiResponse(notes).jsonResponse()).build();
 			} else {
-				return Response.status(Status.BAD_REQUEST)
-						.entity(new JsonApiError("400", "error.client.amount.invalid")).build();
+				return badRequest("error.client.amount.invalid");
 			}
 		} catch (CurrencyNotAvailableException exception) {
-			return Response.status(Status.BAD_REQUEST)
-					.entity(new JsonApiError("400", "error.client.notes.not-available")).build();
+			return badRequest("error.client.notes.not-available");
 		}
 	}
 
@@ -64,7 +62,7 @@ public class CurrencyNotes {
 			dispenserService.loadCurrency("twenties", Integer.valueOf(numberOfNotes));
 			return Response.noContent().build();
 		} else {
-			return Response.status(400).build();
+			return badRequest("error.client.number-of-notes.invalid");
 		}
 	}
 
@@ -76,7 +74,11 @@ public class CurrencyNotes {
 			dispenserService.loadCurrency("fifties", Integer.valueOf(numberOfNotes));
 			return Response.noContent().build();
 		} else {
-			return Response.status(400).build();
+			return badRequest("error.client.number-of-notes.invalid");
 		}
+	}
+
+	private Response badRequest(String message) {
+		return Response.status(Status.BAD_REQUEST).entity(new JsonApiError("400", message)).build();
 	}
 }
