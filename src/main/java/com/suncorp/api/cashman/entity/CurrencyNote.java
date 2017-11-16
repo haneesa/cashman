@@ -23,4 +23,8 @@ public class CurrencyNote implements Entity {
 	private int currencyValue;
 
 	private int numberOfNotes;
+
+	public void setId() {
+		this.id = String.format("%s-%s", currencyValue, numberOfNotes);
+	}
 }

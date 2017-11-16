@@ -33,7 +33,7 @@ Running the micro-service is accomplished using the simple command listed below.
 ```
 
 ## Known Issues
-- Logic to identify currency notes to be dispensed is not yet completed.
+- Logic to identify combination of currency notes to be dispensed is not yet completed.
 
 ## Authors
 @haneesa

@@ -37,14 +37,32 @@ public class CurrencyDispenserService {
 		if (amountNotAvailable(amount)) {
 			throw new CurrencyNotAvailableException("Amount not available");
 		}
-
 		List<CurrencyNote> notes = new ArrayList<>();
-		CurrencyNote note = new CurrencyNote();
-		note.setCurrencyValue(20);
-		note.setNumberOfNotes(2);
-		note.setId(String.format("%s-%s", note.getCurrencyValue(), note.getNumberOfNotes()));
-		notes.add(note);
+
+		if (isAmountMultipleOf(50, amount) && NotesAvailableFor(fifties, amount / 50)) {
+			CurrencyNote note = new CurrencyNote();
+			note.setCurrencyValue(50);
+			note.setNumberOfNotes(amount / 50);
+			note.setId();
+			notes.add(note);
+		} else if (isAmountMultipleOf(20, amount) && NotesAvailableFor(twenties, amount / 20)) {
+			CurrencyNote note = new CurrencyNote();
+			note.setCurrencyValue(20);
+			note.setNumberOfNotes(amount / 20);
+			note.setId();
+			notes.add(note);
+		} else {
+			throw new CurrencyNotAvailableException("Amount not available");
+		}
 		return notes;
+	}
+
+	private boolean NotesAvailableFor(int notesAvailable, int numberOfNotesRequired) {
+		return notesAvailable > numberOfNotesRequired;
+	}
+
+	private boolean isAmountMultipleOf(int denomination, int amount) {
+		return amount % denomination == 0;
 	}
 
 	private boolean amountNotAvailable(int amount) {
