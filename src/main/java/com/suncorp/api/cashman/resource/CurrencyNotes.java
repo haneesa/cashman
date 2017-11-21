@@ -36,8 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 @Produces("application/vnd.api+json")
 public class CurrencyNotes {
 
-	private static final String FIFTIES = "fifties";
-	private static final String TWENTIES = "twenties";
+	private static final String CONSTANT_50 = "50";
+	private static final String CONSTANT_20 = "20";
+
 	@Autowired
 	private CurrencyDispenserService dispenserService;
 
@@ -57,23 +58,12 @@ public class CurrencyNotes {
 	}
 
 	@POST
-	@Path("20/{numberOfNotes}")
-	public Response loadTwentyCurrencyNotes(@PathParam("numberOfNotes") String numberOfNotes) {
-		log.info("Request for load Twenty denomination: {}", numberOfNotes);
-		if (StringUtils.isNumeric(numberOfNotes)) {
-			dispenserService.loadCurrency(TWENTIES, Integer.valueOf(numberOfNotes));
-			return Response.noContent().build();
-		} else {
-			return badRequest("error.client.number-of-notes.invalid");
-		}
-	}
-
-	@POST
-	@Path("50/{numberOfNotes}")
-	public Response loadFiftyCurrencyNotes(@PathParam("numberOfNotes") String numberOfNotes) {
-		log.info("Request for load Twenty denomination: {}", numberOfNotes);
-		if (StringUtils.isNumeric(numberOfNotes)) {
-			dispenserService.loadCurrency(FIFTIES, Integer.valueOf(numberOfNotes));
+	@Path("{currency}/{numberOfNotes}")
+	public Response loadCurrencyNotes(@PathParam("currency") String currency,
+			@PathParam("numberOfNotes") String numberOfNotes) {
+		log.info("Request for load {} denomination: {}", currency, numberOfNotes);
+		if (isAcceptable(currency) && StringUtils.isNumeric(numberOfNotes)) {
+			dispenserService.loadCurrency(Integer.valueOf(currency), Integer.valueOf(numberOfNotes));
 			return Response.noContent().build();
 		} else {
 			return badRequest("error.client.number-of-notes.invalid");
@@ -89,5 +79,9 @@ public class CurrencyNotes {
 
 	private Response badRequest(String message) {
 		return Response.status(Status.BAD_REQUEST).entity(new JsonApiError("400", message)).build();
+	}
+
+	private boolean isAcceptable(String currency) {
+		return CONSTANT_20.equals(currency) || CONSTANT_50.equals(currency);
 	}
 }

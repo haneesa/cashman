@@ -47,22 +47,22 @@ public class CurrencyNotesTest {
 
 	@Test
 	public void shouldReturnBadRequestWhenNumberOfNotesIsInvalidForTwenty() {
-		assertEquals(HttpStatus.BAD_REQUEST.value(), currencyNotes.loadTwentyCurrencyNotes("Ten").getStatus());
+		assertEquals(HttpStatus.BAD_REQUEST.value(), currencyNotes.loadCurrencyNotes("Twenty", "Ten").getStatus());
 	}
 
 	@Test
 	public void shouldReturnSuccessForValidNumberOfNotesForTwenty() {
-		assertEquals(HttpStatus.NO_CONTENT.value(), currencyNotes.loadTwentyCurrencyNotes("10").getStatus());
+		assertEquals(HttpStatus.NO_CONTENT.value(), currencyNotes.loadCurrencyNotes("20", "10").getStatus());
 	}
 
 	@Test
 	public void shouldReturnBadRequestWhenNumberOfNotesIsInvalidForFifty() {
-		assertEquals(HttpStatus.BAD_REQUEST.value(), currencyNotes.loadFiftyCurrencyNotes("Ten").getStatus());
+		assertEquals(HttpStatus.BAD_REQUEST.value(), currencyNotes.loadCurrencyNotes("50", "Fifty").getStatus());
 	}
 
 	@Test
 	public void shouldReturnSuccessForValidNumberOfNotesForFifty() {
-		assertEquals(HttpStatus.NO_CONTENT.value(), currencyNotes.loadFiftyCurrencyNotes("10").getStatus());
+		assertEquals(HttpStatus.NO_CONTENT.value(), currencyNotes.loadCurrencyNotes("50", "10").getStatus());
 	}
 
 	@Test

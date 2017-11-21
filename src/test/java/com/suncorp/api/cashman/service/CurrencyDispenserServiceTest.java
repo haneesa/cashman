@@ -40,6 +40,16 @@ public class CurrencyDispenserServiceTest {
 		assertEquals(50, notes.get(0).getCurrencyValue());
 	}
 
+	@Test
+	public void shouldReturnValueWithCombinationCurrency() {
+		dispenserService.postConstruct();
+		List<CurrencyNote> notes = dispenserService.dispenseCurrency(170);
+		assertEquals(3, notes.get(0).getNumberOfNotes());
+		assertEquals(50, notes.get(0).getCurrencyValue());
+		assertEquals(1, notes.get(1).getNumberOfNotes());
+		assertEquals(20, notes.get(1).getCurrencyValue());
+	}
+
 	@Test(expected = CurrencyNotAvailableException.class)
 	public void shouldThrowExceptionWhenAmountCannotBeDispensed() {
 		dispenserService.postConstruct();

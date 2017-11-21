@@ -2,6 +2,8 @@ package com.suncorp.api.cashman.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
@@ -21,17 +23,22 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CurrencyDispenserService {
 
+	/** Assumption - one transaction at a time */
+
+	private static final int CONSTANT_10 = 10;
+
 	private static final int CONSTANT_20 = 20;
+
 	private static final int CONSTANT_50 = 50;
-	private int twenties;
-	private int fifties;
+
+	private Map<Integer, Integer> cash = new ConcurrentHashMap<>();
 
 	/** Initialization of currency */
 	@PostConstruct
 	public void postConstruct() {
-		twenties = 10;
+		cash.put(CONSTANT_20, CONSTANT_10);
 		log.info("Initialized twenties to 10");
-		fifties = 10;
+		cash.put(CONSTANT_50, CONSTANT_10);
 		log.info("Initialized fifties to 10");
 	}
 
@@ -39,54 +46,93 @@ public class CurrencyDispenserService {
 		if (amountNotAvailable(amount)) {
 			throw new CurrencyNotAvailableException("Amount not available");
 		}
-		List<CurrencyNote> notes = new ArrayList<>();
-		if (isAmountMultipleOf(CONSTANT_50, amount) && NotesAvailableFor(fifties, amount / CONSTANT_50)) {
-			int numberOfNotes = amount / CONSTANT_50;
-			notes.add(note(CONSTANT_50, numberOfNotes));
-			fifties = fifties - numberOfNotes;
-		} else if (isAmountMultipleOf(CONSTANT_20, amount) && NotesAvailableFor(twenties, amount / CONSTANT_20)) {
-			int numberOfNotes = amount / CONSTANT_20;
-			notes.add(note(CONSTANT_20, numberOfNotes));
-			twenties = twenties - numberOfNotes;
-		} else {
+		List<CurrencyNote> notes = notes(amount);
+		if (notes.isEmpty()) {
 			throw new CurrencyNotAvailableException("Amount not available");
+		} else {
+			notes.forEach(note -> dispenseNotes(note.getCurrencyValue(), note.getNumberOfNotes()));
 		}
 		return notes;
 	}
 
-	private boolean NotesAvailableFor(int notesAvailable, int numberOfNotesRequired) {
+	private void dispenseNotes(int currencyValue, int numberOfNotes) {
+		cash.put(currencyValue, cash.get(currencyValue) - numberOfNotes);
+	}
+
+	private static boolean notesAvailableFor(int notesAvailable, int numberOfNotesRequired) {
 		return notesAvailable > numberOfNotesRequired;
 	}
 
-	private boolean isAmountMultipleOf(int denomination, int amount) {
-		return amount % denomination == 0;
-	}
-
 	private boolean amountNotAvailable(int amount) {
-		return amount > twenties * CONSTANT_20 + fifties * CONSTANT_50;
+		return amount > availableCash();
 	}
 
-	public void loadCurrency(String currencyType, int numberOfNotes) {
-		if ("twenties".equalsIgnoreCase(currencyType)) {
-			twenties = twenties + numberOfNotes;
-		} else if ("fifties".equalsIgnoreCase(currencyType)) {
-			fifties = fifties + numberOfNotes;
-		}
+	private int availableCash() {
+		return cash.get(CONSTANT_20) * CONSTANT_20 + cash.get(CONSTANT_50) * CONSTANT_50;
+	}
+
+	public void loadCurrency(int currency, int numberOfNotes) {
+		cash.put(currency, cash.get(currency) + numberOfNotes);
 	}
 
 	public List<CurrencyNote> fetchThreshold() {
 		List<CurrencyNote> notes = new ArrayList<>();
-		notes.add(note(CONSTANT_50, fifties));
-		notes.add(note(CONSTANT_20, twenties));
+		notes.add(note(CONSTANT_50, cash.get(CONSTANT_50)));
+		notes.add(note(CONSTANT_20, cash.get(CONSTANT_20)));
 		return notes;
 	}
 
-	private CurrencyNote note(int denomination, int numberOfNotes) {
+	private static CurrencyNote note(int denomination, int numberOfNotes) {
 		CurrencyNote note = new CurrencyNote();
 		note.setCurrencyValue(denomination);
 		note.setNumberOfNotes(numberOfNotes);
 		note.setId();
 		return note;
+	}
+
+	private List<CurrencyNote> notes(int amount) {
+		boolean cashDispensed = false;
+		List<CurrencyNote> notes = new ArrayList<>();
+		if (amount >= CONSTANT_50) {
+			int reminder = amount % CONSTANT_50;
+			int numberOfFiftyNotes = (amount - reminder) / CONSTANT_50;
+			do {
+				if (notesAvailableFor(cash.get(CONSTANT_50), numberOfFiftyNotes)) {
+					notes.add(note(CONSTANT_50, numberOfFiftyNotes));
+					int remainingAmount = amount - (CONSTANT_50 * numberOfFiftyNotes);
+					if (remainingAmount == 0) {
+						cashDispensed = true;
+						break;
+					}
+					if (remainingAmount >= CONSTANT_20) {
+						if (remainingAmount % CONSTANT_20 == 0) {
+							int numberOfTwentyNotes = remainingAmount / CONSTANT_20;
+							if (notesAvailableFor(cash.get(CONSTANT_20), numberOfTwentyNotes)) {
+								notes.add(note(CONSTANT_20, numberOfTwentyNotes));
+								cashDispensed = true;
+								break;
+							}
+						} else {
+							notes.clear();
+							numberOfFiftyNotes--;
+						}
+					} else {
+						notes.clear();
+						numberOfFiftyNotes--;
+					}
+				} else {
+					notes.clear();
+					numberOfFiftyNotes--;
+				}
+			} while (numberOfFiftyNotes >= 1);
+		}
+		if ((!cashDispensed) && amount % CONSTANT_20 == 0) {
+			int numberOfTwentyNotes = amount / CONSTANT_20;
+			if (notesAvailableFor(cash.get(CONSTANT_20), numberOfTwentyNotes)) {
+				notes.add(note(CONSTANT_20, numberOfTwentyNotes));
+			}
+		}
+		return notes;
 	}
 
 }
