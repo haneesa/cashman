@@ -32,9 +32,6 @@ Running the micro-service is accomplished using the simple command listed below.
 ./gradlew bootRun
 ```
 
-## Known Issues
-- Logic to identify combination of currency notes to be dispensed is not yet completed.
-
 ## Authors
 @haneesa
 
